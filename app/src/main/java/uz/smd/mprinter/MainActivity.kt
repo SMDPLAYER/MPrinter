@@ -33,31 +33,43 @@ import java.text.SimpleDateFormat
 import java.util.*
 
 class MainActivity : AppCompatActivity() {
+    fun bluetoothPermissions(block: () -> Unit) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            checkPermissionPhoto(Manifest.permission.BLUETOOTH_CONNECT) {
+                bluetoothPermissions1(block)
+            }
+        } else {
+            bluetoothPermissions1(block)
+        }
+    }
+
+    fun bluetoothPermissions1(block: () -> Unit) {
+        checkPermissionPhoto(Manifest.permission.BLUETOOTH) {
+            checkPermissionPhoto(Manifest.permission.BLUETOOTH_ADMIN) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                    checkPermissionPhoto(Manifest.permission.BLUETOOTH_SCAN) {
+                        block()
+                    }
+                } else {
+                    block()
+                }
+            }
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         var button = findViewById<View>(R.id.button_bluetooth_browse) as Button
         button.setOnClickListener {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                checkPermissionPhoto(Manifest.permission.BLUETOOTH_CONNECT){
-                    setBluetooth(true)
-                    browseBluetoothDevice()
-                }
-            }else{
-                setBluetooth(true)
-                browseBluetoothDevice()
+            bluetoothPermissions {
+                setBluetooth { browseBluetoothDevice() }
             }
         }
         button = findViewById<View>(R.id.button_bluetooth) as Button
         button.setOnClickListener {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                checkPermissionPhoto(Manifest.permission.BLUETOOTH_CONNECT){
-                    setBluetooth(true)
-                    printBluetooth()
-                }
-            }else{
-                setBluetooth(true)
-                printBluetooth()
+            bluetoothPermissions {
+                setBluetooth { printBluetooth() }
             }
 
         }
@@ -157,7 +169,10 @@ class MainActivity : AppCompatActivity() {
             AsyncBluetoothEscPosPrint(
                 this,
                 object : AsyncEscPosPrint.OnPrintFinished() {
-                  override  fun onError(asyncEscPosPrinter: AsyncEscPosPrinter?, codeException: Int) {
+                    override fun onError(
+                        asyncEscPosPrinter: AsyncEscPosPrinter?,
+                        codeException: Int
+                    ) {
                         Log.e(
                             "Async.OnPrintFinished",
                             "AsyncEscPosPrint.OnPrintFinished : An error occurred !"
@@ -190,7 +205,7 @@ class MainActivity : AppCompatActivity() {
                             AsyncUsbEscPosPrint(
                                 context,
                                 object : AsyncEscPosPrint.OnPrintFinished() {
-                                   override fun onError(
+                                    override fun onError(
                                         asyncEscPosPrinter: AsyncEscPosPrinter?,
                                         codeException: Int
                                     ) {
@@ -200,7 +215,7 @@ class MainActivity : AppCompatActivity() {
                                         )
                                     }
 
-                                  override  fun onSuccess(asyncEscPosPrinter: AsyncEscPosPrinter?) {
+                                    override fun onSuccess(asyncEscPosPrinter: AsyncEscPosPrinter?) {
                                         Log.i(
                                             "Async.OnPrintFinished",
                                             "AsyncEscPosPrint.OnPrintFinished : Print is finished !"
@@ -254,14 +269,17 @@ class MainActivity : AppCompatActivity() {
             AsyncTcpEscPosPrint(
                 this,
                 object : AsyncEscPosPrint.OnPrintFinished() {
-                   override fun onError(asyncEscPosPrinter: AsyncEscPosPrinter?, codeException: Int) {
+                    override fun onError(
+                        asyncEscPosPrinter: AsyncEscPosPrinter?,
+                        codeException: Int
+                    ) {
                         Log.e(
                             "Async.OnPrintFinished",
                             "AsyncEscPosPrint.OnPrintFinished : An error occurred !"
                         )
                     }
 
-                   override fun onSuccess(asyncEscPosPrinter: AsyncEscPosPrinter?) {
+                    override fun onSuccess(asyncEscPosPrinter: AsyncEscPosPrinter?) {
                         Log.i(
                             "Async.OnPrintFinished",
                             "AsyncEscPosPrint.OnPrintFinished : Print is finished !"

@@ -1,21 +1,21 @@
 package uz.smd.mprinter.utils
 
-import android.bluetooth.BluetoothAdapter
-
-
+import android.bluetooth.BluetoothAdapter.getDefaultAdapter
+import android.os.Handler
 
 
 /**
  * Created by Siddikov Mukhriddin on 6/27/22
  */
-fun setBluetooth(enable: Boolean): Boolean {
-    val bluetoothAdapter = BluetoothAdapter.getDefaultAdapter()
+fun setBluetooth(block:()->Unit) {
+    val bluetoothAdapter = getDefaultAdapter()
     val isEnabled = bluetoothAdapter.isEnabled
-    if (enable && !isEnabled) {
-        return bluetoothAdapter.enable()
-    } else if (!enable && isEnabled) {
-        return bluetoothAdapter.disable()
+    if (!isEnabled) {
+        bluetoothAdapter.enable()
+        Handler().postDelayed({
+            block()
+        }, 1000)
+
     }
-    // No need to change bluetooth state
-    return true
+    block()
 }
